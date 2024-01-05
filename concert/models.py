@@ -1,37 +1,67 @@
-#!/bin/bash
-echo "****************************************"
-echo " Setting up Capstone Environment"
-echo "****************************************"
+from datetime import datetime
 
-echo "Installing Python 3.9 and Virtual Environment"
-sudo apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3.9-venv
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 
-echo "Checking the Python version..."
-python3.9 --version
 
-echo "Creating a Python virtual environment"
-python3.9 -m venv ~/venv
+# Create your models here.
 
-echo "Configuring the developer environment..."
-echo "# DevOps Capstone Project additions" >> ~/.bashrc
-echo "export GITHUB_ACCOUNT=$GITHUB_ACCOUNT" >> ~/.bashrc
-echo 'export PS1="\[\e]0;\u:\W\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ "' >> ~/.bashrc
-echo "source ~/venv/bin/activate" >> ~/.bashrc
+class Concert(models.Model):
+    # concert_name
+    # duration
+    # city
+    # date
 
-echo "Installing Python dependencies..."
-source ~/venv/bin/activate && python3.9 -m pip install --upgrade pip wheel
-source ~/venv/bin/activate && pip install -r requirements.txt
+    def __str__(self):
+        return self.concert_name
 
-echo "Starting the Postgres Docker container..."
-make db
 
-echo "Checking the Postgres Docker container..."
-docker ps
+class ConcertAttending(models.Model):
+    class AttendingChoices(models.TextChoices):
+        NOTHING = "-", _("-")
+        NOT_ATTENDING = "Not Attending", _("Not Attending")
+        ATTENDING = "Attending", _("Attending")
 
-echo "****************************************"
-echo " Capstone Environment Setup Complete"
-echo "****************************************"
-echo ""
-echo "Use 'exit' to close this terminal and open a new one to initialize the environment"
-echo ""
+    concert = models.ForeignKey(
+        Concert, null=True, on_delete=models.CASCADE, related_name="attendee"
+    )
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    attending = models.CharField(
+        max_length=100,
+        choices=AttendingChoices.choices,
+        default=AttendingChoices.NOTHING,
+    )
+
+    class Meta:
+        unique_together = ['concert', 'user']
+
+    def __str__(self):
+        return self.attending
+
+
+class Photo(models.Model):
+    # id
+    # pic_url
+    # event_country
+    # event_state
+    # event_city
+    # event_date
+
+    class Meta:
+        managed = False
+
+    def __str__(self):
+        return self.pic_url
+
+
+class Song(models.Model):
+    # id
+    # title
+    # lyrics
+
+    class Meta:
+        managed = False
+
+    def __str__(self):
+        return self.title
